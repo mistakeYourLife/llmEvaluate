@@ -56,7 +56,7 @@ Run admin service:
 .venv/bin/uvicorn admin.app:app --reload --port 8001
 ```
 
-The current worker entrypoint is still a code-level skeleton. Replay and evaluation jobs are available as Python functions under `task/jobs`.
+Replay and evaluation jobs now use provider records from the database. Streaming proxying is still pending, but non-stream requests are fully routed through configured providers.
 
 ## Admin Web
 

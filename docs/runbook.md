@@ -85,7 +85,6 @@ npm run build
 
 ## 6. Current Limitations
 
-- `api` proxy currently records complete request and response paths, but provider forwarding is still a mock response.
-- execution worker job writes mock replay results for the configured provider ids.
-- evaluation worker job runs a stub `LLMJudgeEvaluator`.
+- streaming proxying is not implemented yet.
+- judge quality still depends on the configured provider returning JSON in the expected evaluator format.
 - admin web is a functional scaffold, not a finished product UI.

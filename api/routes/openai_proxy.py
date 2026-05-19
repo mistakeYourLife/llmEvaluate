@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi import Body
 from fastapi import Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from api.services.proxy_service import ProxyService
@@ -20,4 +21,5 @@ def chat_completions(
     session: Session = Depends(get_db_session),
 ) -> dict:
     service = ProxyService(session)
-    return service.handle_chat_completions(payload)
+    result = service.handle_chat_completions(payload)
+    return JSONResponse(content=result.body, status_code=result.status_code)

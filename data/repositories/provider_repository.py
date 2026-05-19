@@ -37,6 +37,14 @@ class ProviderRepository:
     def list_all(self) -> list[Provider]:
         return self.session.query(Provider).order_by(Provider.id.desc()).all()
 
+    def get_first_enabled(self) -> Provider | None:
+        return (
+            self.session.query(Provider)
+            .filter(Provider.enabled.is_(True))
+            .order_by(Provider.id.asc())
+            .first()
+        )
+
     def get_by_id(self, provider_id: int) -> Provider | None:
         return self.session.get(Provider, provider_id)
 
