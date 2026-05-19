@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from api.providers.base import build_provider_adapter
 from admin.schemas import ProviderCreateRequest
+from admin.schemas import ProviderListResponse
 from admin.schemas import ProviderProbeResponse
 from admin.schemas import ProviderResponse
 from admin.schemas import ProviderUpdateRequest
@@ -33,10 +34,10 @@ def create_provider(
     return ProviderResponse.model_validate(provider)
 
 
-@router.get("", response_model=list[ProviderResponse])
-def list_providers(session: Session = Depends(get_db_session)) -> list[ProviderResponse]:
+@router.get("", response_model=ProviderListResponse)
+def list_providers(session: Session = Depends(get_db_session)) -> ProviderListResponse:
     repository = ProviderRepository(session)
-    return [ProviderResponse.model_validate(item) for item in repository.list_all()]
+    return ProviderListResponse(items=[ProviderResponse.model_validate(item) for item in repository.list_all()])
 
 
 @router.put("/{provider_id}", response_model=ProviderResponse)

@@ -23,6 +23,10 @@ class ProviderResponse(BaseModel):
     enabled: bool
 
 
+class ProviderListResponse(BaseModel):
+    items: list[ProviderResponse]
+
+
 class ProviderUpdateRequest(BaseModel):
     name: str | None = None
     base_url: str | None = None

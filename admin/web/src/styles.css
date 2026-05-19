@@ -1,0 +1,122 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a1020;
+  --panel: #111933;
+  --panel-2: #152043;
+  --text: #eff4ff;
+  --muted: #9aa8c7;
+  --accent: #6be0c4;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(107, 224, 196, 0.16), transparent 30%),
+    linear-gradient(180deg, #09101f, #0a1020 40%, #060a14);
+  color: var(--text);
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  padding: 24px;
+  border-right: 1px solid var(--border);
+  background: rgba(8, 12, 24, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.sidebar h1 {
+  margin: 0 0 24px;
+  font-size: 24px;
+}
+
+.nav {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  border-radius: 12px;
+}
+
+.nav.active {
+  background: var(--accent);
+  color: #07131a;
+  font-weight: 700;
+}
+
+.content {
+  padding: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(21, 32, 67, 0.72);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text);
+}
+
+button {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #07131a;
+  font-weight: 700;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.error {
+  color: #ff9090;
+}
+
+.pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
