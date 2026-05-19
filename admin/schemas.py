@@ -69,3 +69,30 @@ class ExecutionTaskResponse(BaseModel):
 
 class ExecutionTaskListResponse(BaseModel):
     items: list[ExecutionTaskResponse]
+
+
+class EvaluationTaskCreateRequest(BaseModel):
+    name: str
+    source_type: str
+    source_ref_id: int
+    evaluator_type: str
+    judge_provider_id: int
+    judge_model: str
+    task_config_json: dict = {}
+
+
+class EvaluationTaskResponse(BaseModel):
+    id: int
+    name: str
+    source_type: str
+    source_ref_id: int
+    evaluator_type: str
+    judge_provider_id: int
+    judge_model: str
+    status: str
+    progress_total: int
+    progress_done: int
+
+
+class EvaluationTaskListResponse(BaseModel):
+    items: list[EvaluationTaskResponse]
