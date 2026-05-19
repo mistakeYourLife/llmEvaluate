@@ -50,6 +50,66 @@ class ExecutionRepository:
         self.session.refresh(task)
         return task
 
+    def update_progress(self, task_id: int, *, total: int, done: int) -> ExecutionTask | None:
+        task = self.get_task(task_id)
+        if task is None:
+            return None
+        task.progress_total = total
+        task.progress_done = done
+        self.session.add(task)
+        self.session.flush()
+        self.session.refresh(task)
+        return task
+
+    def create_result(
+        self,
+        *,
+        execution_task_id: int,
+        source_request_id: int | None,
+        sample_id: int | None,
+        provider_id: int,
+        model: str | None,
+        run_index: int,
+        request_body_json: dict,
+        response_body_json: dict,
+        output_text: str | None,
+        http_status: int | None,
+        success: bool,
+        first_token_latency_ms: int | None = None,
+        complete_latency_ms: int | None = None,
+        prompt_tokens: int | None = None,
+        completion_tokens: int | None = None,
+        total_tokens: int | None = None,
+        tokens_per_second: int | None = None,
+        error_code: str | None = None,
+        error_message: str | None = None,
+    ) -> ExecutionResult:
+        result = ExecutionResult(
+            execution_task_id=execution_task_id,
+            source_request_id=source_request_id,
+            sample_id=sample_id,
+            provider_id=provider_id,
+            model=model,
+            run_index=run_index,
+            request_body_json=request_body_json,
+            response_body_json=response_body_json,
+            output_text=output_text,
+            http_status=http_status,
+            first_token_latency_ms=first_token_latency_ms,
+            complete_latency_ms=complete_latency_ms,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=total_tokens,
+            tokens_per_second=tokens_per_second,
+            success=success,
+            error_code=error_code,
+            error_message=error_message,
+        )
+        self.session.add(result)
+        self.session.flush()
+        self.session.refresh(result)
+        return result
+
     def list_results(self, task_id: int) -> list[ExecutionResult]:
         return (
             self.session.query(ExecutionResult)
