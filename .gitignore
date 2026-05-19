@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
+*.db
 node_modules/
 dist/
 build/
