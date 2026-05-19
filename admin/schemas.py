@@ -32,3 +32,17 @@ class ProviderUpdateRequest(BaseModel):
 class ProviderProbeResponse(BaseModel):
     ok: bool
     detail: str
+
+
+class RecordItemResponse(BaseModel):
+    id: int
+    provider_id: int
+    request_type: str
+    model: str | None = None
+    is_stream: bool
+    http_status: int | None = None
+    response_id: int | None = None
+
+
+class RecordListResponse(BaseModel):
+    items: list[RecordItemResponse]
