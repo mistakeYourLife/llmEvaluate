@@ -4,7 +4,9 @@ from fastapi import HTTPException
 from fastapi import status
 from sqlalchemy.orm import Session
 
+from api.providers.base import build_provider_adapter
 from admin.schemas import ProviderCreateRequest
+from admin.schemas import ProviderProbeResponse
 from admin.schemas import ProviderResponse
 from admin.schemas import ProviderUpdateRequest
 from data.db import get_db_session
@@ -80,3 +82,18 @@ def enable_provider(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found")
 
     return ProviderResponse.model_validate(provider)
+
+
+@router.post("/{provider_id}/test", response_model=ProviderProbeResponse)
+def test_provider_connection(
+    provider_id: int,
+    session: Session = Depends(get_db_session),
+) -> ProviderProbeResponse:
+    repository = ProviderRepository(session)
+    provider = repository.get_by_id(provider_id)
+    if provider is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found")
+
+    adapter = build_provider_adapter(provider)
+    result = adapter.probe()
+    return ProviderProbeResponse(ok=result.ok, detail=result.detail)

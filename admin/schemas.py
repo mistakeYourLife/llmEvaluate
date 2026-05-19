@@ -27,3 +27,8 @@ class ProviderUpdateRequest(BaseModel):
     name: str | None = None
     base_url: str | None = None
     default_model: str | None = None
+
+
+class ProviderProbeResponse(BaseModel):
+    ok: bool
+    detail: str
