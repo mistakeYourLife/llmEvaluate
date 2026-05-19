@@ -46,3 +46,26 @@ class RecordItemResponse(BaseModel):
 
 class RecordListResponse(BaseModel):
     items: list[RecordItemResponse]
+
+
+class ExecutionTaskCreateRequest(BaseModel):
+    name: str
+    source_type: str
+    source_ref_id: int
+    target_provider_ids_json: dict
+    target_models_json: dict
+    task_config_json: dict = {}
+
+
+class ExecutionTaskResponse(BaseModel):
+    id: int
+    name: str
+    source_type: str
+    source_ref_id: int
+    status: str
+    progress_total: int
+    progress_done: int
+
+
+class ExecutionTaskListResponse(BaseModel):
+    items: list[ExecutionTaskResponse]
