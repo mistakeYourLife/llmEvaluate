@@ -40,6 +40,16 @@ class ExecutionRepository:
     def get_task(self, task_id: int) -> ExecutionTask | None:
         return self.session.get(ExecutionTask, task_id)
 
+    def update_task_name(self, task_id: int, name: str) -> ExecutionTask | None:
+        task = self.get_task(task_id)
+        if task is None:
+            return None
+        task.name = name.strip() or str(task.id)
+        self.session.add(task)
+        self.session.flush()
+        self.session.refresh(task)
+        return task
+
     def update_status(self, task_id: int, status: str) -> ExecutionTask | None:
         task = self.get_task(task_id)
         if task is None:
@@ -117,3 +127,10 @@ class ExecutionRepository:
             .order_by(ExecutionResult.id.asc())
             .all()
         )
+
+    def get_result(self, result_id: int) -> ExecutionResult | None:
+        return self.session.get(ExecutionResult, result_id)
+
+    def delete_results(self, task_id: int) -> None:
+        self.session.query(ExecutionResult).filter(ExecutionResult.execution_task_id == task_id).delete()
+        self.session.flush()

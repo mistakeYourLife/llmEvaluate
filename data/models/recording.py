@@ -15,6 +15,7 @@ class RecordedRequest(TimestampMixin, Base):
     __tablename__ = "recorded_request"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str | None] = mapped_column(String(255))
     provider_id: Mapped[int] = mapped_column(ForeignKey("provider.id"), nullable=False)
     source_app: Mapped[str | None] = mapped_column(String(255))
     request_type: Mapped[str] = mapped_column(String(100), nullable=False)

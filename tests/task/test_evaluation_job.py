@@ -6,24 +6,44 @@ from data.models import EvaluationTask
 from data.models import ExecutionResult
 from data.models import ExecutionTask
 from data.models import Provider
+from data.models import RecordedRequest
+from data.models import RecordedResponse
 from task.jobs.evaluation_job import run_evaluation_task
 
 
 class FakeJudgeEvaluator:
-    def __init__(self, *args, **kwargs):
-        self.calls: list[tuple[dict, dict]] = []
+    calls: list[dict] = []
 
-    def evaluate(self, *, prompt: dict, candidate: dict):
-        self.calls.append((prompt, candidate))
+    def __init__(self, *args, **kwargs):
+        type(self).calls = []
+
+    def evaluate(
+        self,
+        *,
+        prompt: dict,
+        baseline: dict | None = None,
+        candidate: dict,
+        baseline_output_text: str | None = None,
+        candidate_output_text: str | None = None,
+    ):
+        type(self).calls.append(
+            {
+                "prompt": prompt,
+                "baseline": baseline,
+                "candidate": candidate,
+                "baseline_output_text": baseline_output_text,
+                "candidate_output_text": candidate_output_text,
+            }
+        )
         from task.evaluators.base import EvaluationResult
 
         return EvaluationResult(
             score=8.5,
             dimension_scores={
-                "relevance": 9,
-                "correctness": 8,
-                "completeness": 8,
-                "format_following": 9,
+                "format_consistency": 9,
+                "semantic_consistency": 8,
+                "quality_parity": 8,
+                "risk_control": 9,
             },
             verdict="pass",
             reasoning_summary="judge ok",
@@ -64,9 +84,39 @@ def test_evaluation_job_entrypoint_exists(tmp_path, monkeypatch):
     )
     session.add(execution_task)
     session.flush()
+    recorded_request = RecordedRequest(
+        name="sample-1",
+        provider_id=judge_provider.id,
+        source_app="crm",
+        request_type="chat_completions",
+        model="candidate-model",
+        is_stream=False,
+        request_headers_json={},
+        request_body_json={"messages": [{"role": "user", "content": "q"}]},
+        request_text_snapshot="q",
+    )
+    session.add(recorded_request)
+    session.flush()
+    recorded_response = RecordedResponse(
+        request_id=recorded_request.id,
+        http_status=200,
+        response_headers_json={},
+        response_body_json={"choices": [{"message": {"content": "baseline a"}}]},
+        response_text_snapshot="baseline a",
+        first_token_latency_ms=1,
+        complete_latency_ms=2,
+        prompt_tokens=1,
+        completion_tokens=1,
+        total_tokens=2,
+        tokens_per_second=1,
+        error_code=None,
+        error_message=None,
+    )
+    session.add(recorded_response)
+    session.flush()
     execution_result = ExecutionResult(
         execution_task_id=execution_task.id,
-        source_request_id=None,
+        source_request_id=recorded_request.id,
         sample_id=None,
         provider_id=judge_provider.id,
         model="candidate-model",
@@ -101,10 +151,18 @@ def test_evaluation_job_entrypoint_exists(tmp_path, monkeypatch):
     session.commit()
 
     monkeypatch.setattr("task.jobs.evaluation_job.LLMJudgeEvaluator", FakeJudgeEvaluator)
-    processed = run_evaluation_task(session, evaluation_task.id)
+    task_id = evaluation_task.id
+    session.close()
+
+    processed = run_evaluation_task(task_id, database_url)
+
+    session = get_session_factory(database_url)()
     stored_score = session.query(EvaluationScore).one()
     session.close()
 
     assert processed == 1
+    assert FakeJudgeEvaluator.calls[0]["baseline"] == {"choices": [{"message": {"content": "baseline a"}}]}
+    assert FakeJudgeEvaluator.calls[0]["baseline_output_text"] == "baseline a"
+    assert FakeJudgeEvaluator.calls[0]["candidate_output_text"] == "a"
     assert stored_score.score == 8.5
     assert stored_score.judge_model == "judge-model-from-task"

@@ -3,6 +3,7 @@ from pydantic import Field
 
 
 class RecordedRequestCreate(BaseModel):
+    name: str | None = None
     provider_id: int
     request_type: str
     source_app: str | None = None

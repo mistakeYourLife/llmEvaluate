@@ -14,11 +14,14 @@ from data.models import ExecutionTask
 from data.models import Provider
 from data.models import RecordedRequest
 from data.models import RecordedResponse
+from data.settings import get_settings
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
 target_metadata = Base.metadata
 

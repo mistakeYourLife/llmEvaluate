@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from admin.routes.providers import router as providers_router
 from admin.routes.records import router as records_router
@@ -15,3 +18,8 @@ app.include_router(evaluation_tasks_router)
 @app.get("/admin/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
+
+
+WEB_DIST = Path(__file__).resolve().parent / "web" / "dist"
+if WEB_DIST.exists():
+    app.mount("/", StaticFiles(directory=WEB_DIST, html=True), name="admin-web")

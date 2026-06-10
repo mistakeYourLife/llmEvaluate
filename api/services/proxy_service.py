@@ -23,12 +23,17 @@ class ProxyService:
         self.provider_repository = ProviderRepository(session)
 
     def handle_chat_completions(self, payload: dict) -> ProxyServiceResult:
-        provider = self.provider_repository.get_first_enabled()
+        provider = self.provider_repository.get_default_enabled()
 
         if provider is None:
             return ProxyServiceResult(
                 status_code=400,
-                body={"error": {"message": "no enabled provider configured", "type": "no_provider"}},
+                body={
+                    "error": {
+                        "message": "no default enabled provider configured",
+                        "type": "no_provider",
+                    }
+                },
             )
 
         resolved_model = payload.get("model") or provider.default_model
@@ -66,7 +71,16 @@ class ProxyService:
                 error_code=None if provider_response.status_code < 400 else "provider_error",
                 error_message=None
                 if provider_response.status_code < 400
-                else str(provider_response.body.get("error", provider_response.body)),
+                else self._extract_error_message(provider_response.body),
             )
         )
         return ProxyServiceResult(status_code=provider_response.status_code, body=provider_response.body)
+
+    @staticmethod
+    def _extract_error_message(body: dict) -> str:
+        error = body.get("error")
+        if isinstance(error, dict):
+            message = error.get("message")
+            if isinstance(message, str) and message:
+                return message
+        return str(error or body)

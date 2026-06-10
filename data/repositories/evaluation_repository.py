@@ -93,3 +93,34 @@ class EvaluationRepository:
         self.session.flush()
         self.session.refresh(item)
         return item
+
+    def list_scores(self, task_id: int) -> list[EvaluationScore]:
+        return (
+            self.session.query(EvaluationScore)
+            .filter(EvaluationScore.evaluation_task_id == task_id)
+            .order_by(EvaluationScore.id.asc())
+            .all()
+        )
+
+    def can_delete_task(self, task_id: int) -> bool:
+        task = self.get_task(task_id)
+        if task is None:
+            return False
+        if task.status != "pending":
+            return False
+        if task.progress_total > 0 or task.progress_done > 0:
+            return False
+        score_count = self.session.query(EvaluationScore).filter(EvaluationScore.evaluation_task_id == task_id).count()
+        return score_count == 0
+
+    def delete_task(self, task_id: int) -> bool:
+        task = self.get_task(task_id)
+        if task is None:
+            return False
+        self.session.delete(task)
+        self.session.flush()
+        return True
+
+    def delete_scores(self, task_id: int) -> None:
+        self.session.query(EvaluationScore).filter(EvaluationScore.evaluation_task_id == task_id).delete()
+        self.session.flush()

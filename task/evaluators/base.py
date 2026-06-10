@@ -11,5 +11,13 @@ class EvaluationResult:
 
 
 class Evaluator:
-    def evaluate(self, *, prompt: dict, candidate: dict) -> EvaluationResult:
+    def evaluate(
+        self,
+        *,
+        prompt: dict,
+        baseline: dict | None = None,
+        candidate: dict,
+        baseline_output_text: str | None = None,
+        candidate_output_text: str | None = None,
+    ) -> EvaluationResult:
         raise NotImplementedError

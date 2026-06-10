@@ -73,21 +73,30 @@ def test_execution_job_entrypoint_exists(tmp_path, monkeypatch):
         status="pending",
         progress_total=0,
         progress_done=0,
-        task_config_json={},
+        task_config_json={"run_count": 3},
     )
     session.add(task)
     session.commit()
+    task_id = task.id
+    session.close()
 
     adapter = FakeReplayAdapter()
     monkeypatch.setattr("task.jobs.execution_job.build_provider_adapter", lambda provider: adapter)
 
-    processed = run_execution_task(session, task.id)
+    processed = run_execution_task(task_id, database_url)
 
-    stored_result = session.query(ExecutionResult).one()
+    session = get_session_factory(database_url)()
+    stored_results = session.query(ExecutionResult).order_by(ExecutionResult.id.asc()).all()
+    stored_task = session.get(ExecutionTask, task_id)
     session.close()
 
-    assert processed == 1
+    assert processed == 3
+    assert len(adapter.calls) == 3
     assert adapter.calls[0][1] == "db-replay-model"
-    assert stored_result.model == "db-replay-model"
-    assert stored_result.request_body_json["model"] == "db-replay-model"
-    assert stored_result.output_text == "replay-ok"
+    assert [item.run_index for item in stored_results] == [0, 1, 2]
+    assert all(item.model == "db-replay-model" for item in stored_results)
+    assert all(item.request_body_json["model"] == "db-replay-model" for item in stored_results)
+    assert all(item.output_text == "replay-ok" for item in stored_results)
+    assert stored_task is not None
+    assert stored_task.progress_total == 3
+    assert stored_task.progress_done == 3
